@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +21,9 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - run: npm ci
+      - uses: gradle/actions/setup-gradle@v4
       - run: npx expo prebuild --platform android --no-install
+      - run: echo "reactNativeArchitectures=arm64-v8a" >> android/gradle.properties
       - run: cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
@@ -30,6 +34,7 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           name: IRONX test ${{ github.run_number }}
+          body: Version de test. Télécharge le fichier .apk ci-dessous sur ton téléphone Android et ouvre-le pour l'installer.
           files: app/android/app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
