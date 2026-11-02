@@ -10,10 +10,11 @@ import { loadProfile } from "../store/profile";
 import { loadLibrary } from "../store/library";
 import { loadNutrition } from "../store/nutrition";
 import { loadGym } from "../store/gym";
+import { loadFeed } from "../store/feed";
 
 export default function RootLayout() {
   const [loaded] = useAppFonts();
-  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); loadNutrition(); loadGym(); }, []);
+  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); loadNutrition(); loadGym(); loadFeed(); }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <SafeAreaProvider>

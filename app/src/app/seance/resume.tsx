@@ -47,7 +47,7 @@ export default function Resume() {
           {!prs.length ? <Text style={{ fontFamily: inter(400), fontSize: 13, color: C.mut }}>Pas de record aujourd'hui, le volume compte aussi.</Text> : null}
         </View>
       </View>
-      <Btn label="Publier dans le fil" icon="share" onPress={() => router.replace("/(tabs)/seance")} />
+      <View style={{ flexDirection: "row", gap: 8 }}><View style={{ flex: 1 }}><Btn label="Plus tard" kind="secondary" onPress={() => router.replace("/(tabs)/seance")} /></View><View style={{ flex: 1 }}><Btn label="Publier dans le fil" icon="share" onPress={() => router.replace("/fil/creer")} /></View></View>
     </Page>
   );
 }
