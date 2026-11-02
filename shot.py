@@ -11,7 +11,7 @@ class H(http.server.SimpleHTTPRequestHandler):
         import urllib.parse; p=urllib.parse.urlparse(path).path
         f=super().translate_path(path)
         if p=='/' : return str(DIST/'index.html')
-        if not os.path.exists(f) and os.path.exists(f+'.html'): return f+'.html'
+        if os.path.exists(f+'.html'): return f+'.html'
         return f
     def log_message(self,*a): pass
 h=H

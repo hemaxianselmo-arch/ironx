@@ -2,9 +2,14 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Page, Between, Actions, Avatar, Circ, Label, Big, Sub, B, Surf, Row, Ring, H2, Media, Shade, Ov, OvText, OvTitle, Btn, FRow, Mono } from "../../ui";
 import { C, inter, man } from "../../theme/tokens";
+import { router } from "expo-router";
+import { useWorkout, actions } from "../../store/workout";
+import { PUSH } from "../../data/seed";
 
 /** V3 · Accueil */
 export default function Accueil() {
+  const { active } = useWorkout();
+  const start = () => { if (!active) actions.start(PUSH); router.push("/seance/encours"); };
   return (
     <Page hero withNav>
       <Between>
@@ -24,7 +29,7 @@ export default function Accueil() {
       </View>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 12, paddingVertical: 4 }}>
-        <Circ icon="play" size={56} kind="white" label="Séance" />
+        <Circ icon="play" size={56} kind="white" label="Séance" onPress={start} />
         <Circ icon="plus" size={56} kind="glass" label="Repas" />
         <Circ icon="cam" size={56} kind="glass" label="Story" />
         <Circ icon="stats" size={56} kind="glass" label="Poids" />
@@ -49,7 +54,7 @@ export default function Accueil() {
           <OvTitle>Push · 62 min</OvTitle>
           <OvText dim={0.75}>Développé couché · Incliné · Dips · Élévations</OvText>
         </Ov>
-        <Ov x={14} y={14} anchor="rb"><Btn label="Lancer" kind="white" icon="play" size="sm" full={false} /></Ov>
+        <Ov x={14} y={14} anchor="rb"><Btn label="Lancer" kind="white" icon="play" size="sm" full={false} onPress={start} /></Ov>
       </Media>
 
       <H2 action="Voir tout">Ta salle</H2>
