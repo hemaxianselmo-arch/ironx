@@ -9,3 +9,6 @@ export * from "./Figure";
 export * from "./Nutri";
 export * from "./Gym";
 export * from "./Post";
+export * from "./PerfB";
+export * from "./PerfA";
+export * from "./PerfC";
