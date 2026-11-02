@@ -136,7 +136,7 @@ export default function EnCours() {
           <KV k="Série" v={`${Math.min(si + 1, exo.sets.length)} / ${exo.sets.length}`} />
           <KV k="Précédent" v={best ? `${fmtKg(best.kg)} × ${best.reps}` : "—"} />
           <KV k="1RM est." v={best ? `${fmtKg(e1rm(best.kg, best.reps))} kg` : "—"} />
-          <KV k="Objectif" v={`${fmtKg(cur.kg)} × ${cur.targetReps ?? cur.reps}${cur.targetRpe ? ` @${cur.targetRpe}` : ""}`} />
+          <KV k={best ? `Objectif · ${Math.round((cur.kg / e1rm(best.kg, best.reps)) * 100)} % 1RM` : "Objectif"} v={`${fmtKg(cur.kg)} × ${cur.targetReps ?? cur.reps}${cur.targetRpe ? ` @${cur.targetRpe}` : ""}`} />
         </View>
 
         <Pressable onPress={() => !allDone && setSheet({ si })} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 28, paddingVertical: 6 }}>

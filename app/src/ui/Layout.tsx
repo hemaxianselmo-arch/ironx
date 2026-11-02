@@ -95,14 +95,15 @@ export const KV = ({ k, v, strong = false, align = "flex-start" }: { k: string; 
 );
 
 /** Zone photo arrondie avec overlays (media()) */
-export function Media({ photo, h = 200, w, r = 20, full = false, pos = "center", children, style }: {
-  photo: ImgName; h?: number; w?: number; r?: number; full?: boolean; pos?: "center" | "top" | "bottom"; children?: React.ReactNode; style?: ViewStyle;
+export function Media({ photo, h = 200, w, r = 20, full = false, pos = "center", children, style, onPress }: {
+  photo: ImgName; h?: number; w?: number; r?: number; full?: boolean; pos?: "center" | "top" | "bottom"; children?: React.ReactNode; style?: ViewStyle; onPress?: () => void;
 }) {
+  const Wrap: any = onPress ? Pressable : View;
   return (
-    <View style={[{ height: h, width: w, borderRadius: full ? 0 : r, overflow: "hidden", backgroundColor: "#1B1E31", marginHorizontal: full ? -PAD : 0 }, style]}>
+    <Wrap onPress={onPress} style={[{ height: h, width: w, borderRadius: full ? 0 : r, overflow: "hidden", backgroundColor: "#1B1E31", marginHorizontal: full ? -PAD : 0 }, style]}>
       <Image source={IMG[photo] as ImageSourcePropType} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" } as any} resizeMode="cover" />
       {children}
-    </View>
+    </Wrap>
   );
 }
 /** Voile dégradé bas (shade()) ou haut */

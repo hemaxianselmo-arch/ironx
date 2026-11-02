@@ -80,3 +80,57 @@ export const Progress = ({ pct, color = C.accent, h = 6 }: { pct: number; color?
 export const Mono = ({ children, size = 15, color = C.txt }: { children: React.ReactNode; size?: number; color?: string }) => (
   <Text style={{ fontFamily: man(700), fontSize: size, color, letterSpacing: -0.3 }}>{children}</Text>
 );
+
+/** Plusieurs courbes normalisées (tendances) — series: [{color, points}] */
+export function MultiLine({ series, w = 358, h = 120, labels }: { series: { color: string; points: number[] }[]; w?: number; h?: number; labels?: string[] }) {
+  const all = series.flatMap((s) => s.points); const lo = Math.min(...all), hi = Math.max(...all), rng = hi - lo || 1;
+  return (
+    <Svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      {series.map((s, k) => { const n = s.points.length; if (n < 2) return null; const pts = s.points.map((p, i) => [(i * (w - 8)) / (n - 1) + 4, h - 16 - ((p - lo) / rng) * (h - 28)]); const d = "M" + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L"); const l = pts[pts.length - 1];
+        return <React.Fragment key={k}><Path d={d} fill="none" stroke={s.color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /><Circle cx={l[0]} cy={l[1]} r={4} fill={s.color} stroke={C.bg} strokeWidth={2} /></React.Fragment>; })}
+      {labels ? labels.map((t, i) => <SvgText key={i} x={4 + (i * (w - 8)) / Math.max(1, labels.length - 1)} y={h - 3} fontSize={10} fill={C.mut} textAnchor={i === 0 ? "start" : i === labels.length - 1 ? "end" : "middle"} fontFamily={inter(400)}>{t}</SvgText>) : null}
+    </Svg>
+  );
+}
+
+/** Radar (toile) — axes: labels, series: valeurs 0..1 par axe */
+export function Radar({ axes, series, size = 260 }: { axes: string[]; series: { color: string; values: number[]; fill?: boolean }[]; size?: number }) {
+  const cx = size / 2, cy = size / 2, r = size / 2 - 34, n = axes.length;
+  const pt = (i: number, v: number) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; return [cx + Math.cos(a) * r * v, cy + Math.sin(a) * r * v]; };
+  const ring = (v: number) => "M" + Array.from({ length: n }, (_, i) => pt(i, v).map((x) => x.toFixed(1)).join(" ")).join(" L") + " Z";
+  return (
+    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {[0.25, 0.5, 0.75, 1].map((v) => <Path key={v} d={ring(v)} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />)}
+      {axes.map((_, i) => { const [x, y] = pt(i, 1); return <Path key={i} d={`M${cx} ${cy} L${x} ${y}`} stroke="rgba(255,255,255,0.1)" strokeWidth={1} />; })}
+      {series.map((s, k) => { const d = "M" + s.values.map((v, i) => pt(i, Math.max(0, Math.min(1, v))).map((x) => x.toFixed(1)).join(" ")).join(" L") + " Z"; return <React.Fragment key={k}><Path d={d} fill={s.fill === false ? "none" : s.color} fillOpacity={0.18} stroke={s.color} strokeWidth={2.5} strokeLinejoin="round" />{s.values.map((v, i) => { const [x, y] = pt(i, Math.max(0, Math.min(1, v))); return <Circle key={i} cx={x} cy={y} r={3.5} fill={s.color} />; })}</React.Fragment>; })}
+      {axes.map((a, i) => { const [x, y] = pt(i, 1.17); return <SvgText key={a} x={x} y={y + 4} fontSize={10.5} fill={C.soft} textAnchor="middle" fontFamily={inter(500)}>{a}</SvgText>; })}
+    </Svg>
+  );
+}
+
+/** Carte de chaleur (régularité) : une case par jour, colonnes = semaines */
+export function Heatmap({ days, weeks = 26, w = 358 }: { days: Record<string, number>; weeks?: number; w?: number }) {
+  const cell = Math.floor((w - (weeks - 1) * 2) / weeks); const h = 7 * (cell + 2);
+  const today = new Date(); today.setHours(0, 0, 0, 0); const start = new Date(today); start.setDate(start.getDate() - ((today.getDay() + 6) % 7) - (weeks - 1) * 7);
+  const k = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const mx = Math.max(1, ...Object.values(days));
+  return (
+    <Svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      {Array.from({ length: weeks }, (_, wi) => Array.from({ length: 7 }, (_, di) => { const d = new Date(start); d.setDate(d.getDate() + wi * 7 + di); if (d > today) return null; const v = days[k(d)] ?? 0; const op = v ? 0.35 + 0.65 * Math.min(1, v / mx) : 0; return <Rect key={`${wi}-${di}`} x={wi * (cell + 2)} y={di * (cell + 2)} width={cell} height={cell} rx={2} fill={v ? C.accent : "rgba(255,255,255,0.07)"} fillOpacity={v ? op : 1} />; }))}
+    </Svg>
+  );
+}
+
+/** Barre de niveau (standards) : marqueur sur une échelle de paliers */
+export function LevelBar({ pct, labels, w = 358 }: { pct: number; labels: string[]; w?: number }) {
+  const n = labels.length;
+  return (
+    <View style={{ gap: 4 }}>
+      <View style={{ height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)", overflow: "visible" }}>
+        <View style={{ width: `${Math.max(0, Math.min(100, pct))}%`, height: 6, borderRadius: 3, backgroundColor: C.accent }} />
+        <View style={{ position: "absolute", left: `${Math.max(0, Math.min(100, pct))}%`, top: -4, marginLeft: -1.5, width: 3, height: 14, borderRadius: 2, backgroundColor: C.txt }} />
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>{labels.map((l, i) => <Text key={l} style={{ fontFamily: inter(400), fontSize: 9.5, color: C.mut, width: w / n, textAlign: i === 0 ? "left" : i === n - 1 ? "right" : "center" }}>{l}</Text>)}</View>
+    </View>
+  );
+}
