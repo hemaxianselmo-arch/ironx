@@ -21,8 +21,8 @@ export default function Welcome() {
         <Image source={IMG["ironx-full"]} style={{ width: 210, height: 209 }} resizeMode="contain" />
       </View>
 
-      <View style={{ position: "absolute", left: 24, bottom: bottom + 196, maxWidth: 330 }}>
-        <Text style={{ fontFamily: man(600), fontSize: 24, letterSpacing: -0.5, lineHeight: 24 * 1.15, color: C.txt }}>
+      <View style={{ position: "absolute", left: 24, right: 24, bottom: bottom + 200, alignItems: "center" }}>
+        <Text style={{ fontFamily: man(500), fontSize: 19, letterSpacing: -0.3, lineHeight: 24, color: C.txt, textAlign: "center" }}>
           Le progrès, c'est maintenant<Text style={{ color: C.accent }}>.</Text>
         </Text>
       </View>

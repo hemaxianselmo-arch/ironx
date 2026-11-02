@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Pressable, TextInput, ViewStyle, ScrollView } from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, Pressable, TextInput, ViewStyle, ScrollView, PanResponder, LayoutChangeEvent } from "react-native";
 import { SvgXml } from "react-native-svg";
 import { C, PAD, inter, man } from "../theme/tokens";
 import { Icon } from "./Icon";
@@ -116,18 +116,26 @@ export function SocialBtn({ provider, onPress }: { provider: "apple" | "google";
   );
 }
 
-/** Règle graduée (ruler) : valeur + ticks */
-export function Ruler({ value, unit, step = 1, w = 358 }: { value: number; unit: string; step?: number; w?: number }) {
+/** Règle graduée (ruler) : glisser pour changer la valeur ; `onChange` reçoit la nouvelle valeur */
+export function Ruler({ value, unit, step = 1, w = 358, min = 0, max = 400, onChange }: { value: number; unit: string; step?: number; w?: number; min?: number; max?: number; onChange?: (v: number) => void }) {
   const n = 41, mid = 20;
-  const gap = Math.round((w - 2 * n) / (n - 1));
+  const gap = Math.round((w - 2 * n) / (n - 1)); const pitch = gap + 2;
   const fmt = (v: number) => String(Math.round(v * 100) / 100).replace(".", ",");
+  const startVal = useRef(value); const [drag, setDrag] = useState(0);
+  const cur = useRef(value); cur.current = value;
+  const pan = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => true, onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 2,
+    onPanResponderGrant: () => { startVal.current = cur.current; },
+    onPanResponderMove: (_, g) => { const v = Math.min(max, Math.max(min, startVal.current - Math.round(g.dx / pitch) * step)); setDrag(g.dx - Math.round(g.dx / pitch) * pitch); if (v !== cur.current) onChange?.(Math.round(v * 100) / 100); },
+    onPanResponderRelease: () => setDrag(0), onPanResponderTerminate: () => setDrag(0),
+  })).current;
   return (
     <View style={{ alignItems: "center", gap: 12 }}>
       <Big v={fmt(value)} unit={unit} size={64} />
-      <View style={{ width: w, height: 50, overflow: "hidden" }}>
-        <View style={{ position: "absolute", left: 0, top: 0, flexDirection: "row", gap }}>
+      <View style={{ width: w, height: 50, overflow: "hidden" }} {...pan.panHandlers}>
+        <View style={{ position: "absolute", left: drag, top: 0, flexDirection: "row", gap }}>
           {Array.from({ length: n }).map((_, i) => {
-            const v = value + (i - mid) * step; const big = Math.round(v / step) % 5 === 0;
+            const v = value + (i - mid) * step; const big = Math.abs(Math.round(v / step) % 5) === 0;
             return (
               <View key={i} style={{ width: 2, height: big ? 24 : 10, borderRadius: 1, backgroundColor: big ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)" }}>
                 {big ? <Text style={{ position: "absolute", top: 30, left: -20, width: 42, textAlign: "center", fontFamily: inter(400), fontSize: 10, color: C.mut }}>{fmt(v)}</Text> : null}
@@ -140,13 +148,19 @@ export function Ruler({ value, unit, step = 1, w = 358 }: { value: number; unit:
     </View>
   );
 }
-/** Curseur horizontal simple (slider des maquettes) */
-export function Slider({ pct }: { pct: number }) {
+/** Curseur horizontal (slider) : glisser ou toucher ; `onChange` reçoit 0..1 */
+export function Slider({ pct, onChange }: { pct: number; onChange?: (p: number) => void }) {
+  const width = useRef(1); const x0 = useRef(0);
+  const pan = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => true, onMoveShouldSetPanResponder: () => true,
+    onPanResponderGrant: (e) => { onChange?.(Math.min(1, Math.max(0, e.nativeEvent.locationX / width.current))); x0.current = e.nativeEvent.locationX; },
+    onPanResponderMove: (_, g) => onChange?.(Math.min(1, Math.max(0, (x0.current + g.dx) / width.current))),
+  })).current;
   return (
-    <View style={{ flex: 1, height: 28, justifyContent: "center" }}>
+    <View style={{ flex: 1, height: 36, justifyContent: "center" }} onLayout={(e: LayoutChangeEvent) => { width.current = e.nativeEvent.layout.width; }} {...pan.panHandlers}>
       <View style={{ height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.12)" }} />
       <View style={{ position: "absolute", left: 0, width: `${pct}%`, height: 4, borderRadius: 2, backgroundColor: C.txt }} />
-      <View style={{ position: "absolute", left: `${pct}%`, marginLeft: -14, width: 28, height: 28, borderRadius: 14, backgroundColor: "#fff", boxShadow: "0 3px 10px rgba(0,0,0,0.5)" } as any} />
+      <View pointerEvents="none" style={{ position: "absolute", left: `${pct}%`, marginLeft: -14, width: 28, height: 28, borderRadius: 14, backgroundColor: "#fff", boxShadow: "0 3px 10px rgba(0,0,0,0.5)" } as any} />
     </View>
   );
 }

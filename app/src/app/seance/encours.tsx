@@ -3,6 +3,7 @@ import { View, Text, Pressable, Modal, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { Page, Circ, Btn, Media, Shade, Ov, OvText, OvTitle, Play, KV, Label, Big, Pill, H2, FRow, ExoThumb, Icon, Mono, B, Seg } from "../../ui";
 import { C, inter, man, PAD } from "../../theme/tokens";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkout, actions, fmtT, fmtKg, bestOf } from "../../store/workout";
 import { byId, e1rm } from "../../data/seed";
 
@@ -28,6 +29,7 @@ function SetLine({ n, kg, reps, state, note, onPress }: { n: number; kg: string;
 
 /** S09 · Saisie d'une série — feuille avec pavé numérique */
 function SetSheet({ visible, title, prev, kg, reps, onClose, onValidate }: { visible: boolean; title: string; prev: string; kg: number; reps: number; onClose: () => void; onValidate: (kg: number, reps: number, rpe: number, flags: string[]) => void }) {
+  const insets = useSafeAreaInsets();
   const [field, setField] = useState<"kg" | "reps">("kg");
   const [vals, setVals] = useState({ kg: fmtKg(kg), reps: String(reps) });
   const [rpe, setRpe] = useState(2);
@@ -44,7 +46,7 @@ function SetSheet({ visible, title, prev, kg, reps, onClose, onValidate }: { vis
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} onPress={onClose} />
-      <View style={{ borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 10, paddingHorizontal: 16, paddingBottom: 30, gap: 14, backgroundColor: C.surf }}>
+      <View style={{ borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 10, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 16) + 12, gap: 14, backgroundColor: C.surf }}>
         <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "center" }} />
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
           <Text style={{ fontFamily: man(700), fontSize: 17, color: C.txt }}>{title}</Text>
@@ -66,9 +68,9 @@ function SetSheet({ visible, title, prev, kg, reps, onClose, onValidate }: { vis
           <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 3 }}>{plates.map((p, i) => <View key={i} style={{ width: p >= 10 ? 10 : 7, height: PC[p][1], borderRadius: 3, backgroundColor: PC[p][0] }} />)}</View>
           <Text style={{ fontFamily: inter(400), fontSize: 12.5, color: C.txt }}>{plates.length ? plates.map(fmtKg).join(" + ") : "barre seule"}</Text>
         </View>
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingRight: 16 }} style={{ marginRight: -16 }}>
           {["Échec", "Drop set", "Rest-pause", "Note", "Vidéo"].map((f) => <Pill key={f} label={f} on={flags.includes(f)} onPress={() => setFlags((v) => (v.includes(f) ? v.filter((x) => x !== f) : [...v, f]))} />)}
-        </View>
+        </ScrollView>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0", "OK"].map((k) => (
             <Pressable key={k} onPress={() => press(k)} style={({ pressed }) => ({ width: "31.5%", height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: k === "OK" ? C.accent : pressed ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.06)" })}>
@@ -85,6 +87,7 @@ function SetSheet({ visible, title, prev, kg, reps, onClose, onValidate }: { vis
 export default function EnCours() {
   const { active, restUntil, restTotal, lastPR } = useWorkout();
   const now = useNow();
+  const insets = useSafeAreaInsets();
   const [ei, setEi] = useState(0);
   const [sheet, setSheet] = useState<{ si: number } | null>(null);
   useEffect(() => { if (lastPR) router.push("/seance/record"); }, [lastPR]);
@@ -99,7 +102,7 @@ export default function EnCours() {
 
   return (
     <Page scroll={false} pad={false}>
-      <ScrollView contentContainerStyle={{ padding: PAD, gap: 14, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: PAD, paddingTop: PAD + insets.top, gap: 14, paddingBottom: 120 + insets.bottom }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Circ icon="x" size={38} onPress={() => { actions.discard(); router.back(); }} />
           <View style={{ alignItems: "center" }}>
@@ -128,11 +131,11 @@ export default function EnCours() {
           <View style={{ alignItems: "center", gap: 4 }}><Label>reps</Label><Big v={String(cur.reps)} size={64} /></View>
         </Pressable>
 
-        <View style={{ flexDirection: "row", gap: 8, justifyContent: "center" }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingHorizontal: 16, minWidth: "100%", justifyContent: "center" }} style={{ marginHorizontal: -16 }}>
           <Pill label="−2,5" onPress={() => !allDone && actions.logSet(ei, si, Math.max(0, cur.kg - 2.5), cur.reps)} />
           <Pill label="+2,5" onPress={() => !allDone && actions.logSet(ei, si, cur.kg + 2.5, cur.reps)} />
           <Pill label="RPE 8" on /><Pill label="Échec" /><Pill label="Vidéo" />
-        </View>
+        </ScrollView>
         {allDone ? (
           <Btn label={ei < active.exos.length - 1 ? "Exercice suivant" : "Terminer la séance"} kind="white" icon="chev" onPress={() => (ei < active.exos.length - 1 ? setEi(ei + 1) : (actions.finish(), router.replace("/seance/resume")))} />
         ) : (
@@ -150,7 +153,7 @@ export default function EnCours() {
       </ScrollView>
 
       {restLeft > 0 ? (
-        <View style={{ position: "absolute", left: 16, right: 16, bottom: 24, borderRadius: 22, padding: 14, backgroundColor: C.surf2, flexDirection: "row", alignItems: "center", gap: 14, boxShadow: "0 10px 30px rgba(0,0,0,0.5)" } as any}>
+        <View style={{ position: "absolute", left: 16, right: 16, bottom: 16 + Math.max(insets.bottom, 8), borderRadius: 22, padding: 14, backgroundColor: C.surf2, flexDirection: "row", alignItems: "center", gap: 14, boxShadow: "0 10px 30px rgba(0,0,0,0.5)" } as any}>
           <View style={{ flex: 1, gap: 6 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
               <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>Repos</Text>

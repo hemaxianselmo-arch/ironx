@@ -3,12 +3,14 @@ import { View, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Page, Media, Shade, Ov, OvText, OvTitle, Circ, KV, Divider, Btn } from "../../ui";
 import { C, inter, man } from "../../theme/tokens";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkout, volume, setsDone, repsDone, fmtT, fmtVol, fmtKg, exoName } from "../../store/workout";
 
 /** S17 · Détail d'une séance passée */
 export default function Detail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { history } = useWorkout();
+  const insets = useSafeAreaInsets();
   const s = history.find((x) => x.id === id);
   if (!s) return <Page><Btn label="Retour" kind="secondary" onPress={() => router.back()} /></Page>;
   const d = new Date(s.startedAt);
@@ -16,7 +18,7 @@ export default function Detail() {
     <Page pad={false}>
       <Media photo={s.photo as any} h={230} r={0}>
         <Shade />
-        <Ov x={16} y={54} anchor="lt" style={{ right: 16, flexDirection: "row", justifyContent: "space-between" }}>
+        <Ov x={16} y={insets.top + 14} anchor="lt" style={{ right: 16, flexDirection: "row", justifyContent: "space-between" }}>
           <Circ icon="back" size={38} kind="glass" onPress={() => router.back()} />
           <View style={{ flexDirection: "row", gap: 8 }}><Circ icon="share" size={38} kind="glass" /><Circ icon="more" size={38} kind="glass" /></View>
         </Ov>

@@ -19,7 +19,7 @@ export default function Rythme() {
         <Big v={String(n)} unit="séances / semaine" size={72} />
         <View style={{ width: "100%", flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6, paddingHorizontal: 4 }}>
           <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>2</Text>
-          <Slider pct={((n - 2) / 5) * 100} />
+          <Slider pct={((n - 2) / 5) * 100} onChange={(p) => setN(2 + Math.round(p * 5))} />
           <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>7</Text>
         </View>
       </View>

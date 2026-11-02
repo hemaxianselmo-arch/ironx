@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, View, ViewStyle, StyleSheet, Image } from "react-native";
+import { Pressable, Text, View, ViewStyle, StyleSheet, Image, ScrollView } from "react-native";
 import { C, accentA, inter, man } from "../theme/tokens";
 import { Icon, IconName } from "./Icon";
 import { IMG, ImgName } from "../theme/images";
@@ -58,9 +58,9 @@ export function Pill({ label, on, onPress }: { label: string; on?: boolean; onPr
 }
 export function Pills({ items, on = 0, onChange }: { items: string[]; on?: number; onChange?: (i: number) => void }) {
   return (
-    <View style={{ flexDirection: "row", gap: 8, overflow: "hidden" }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingRight: 16 }} style={{ marginRight: -16 }}>
       {items.map((t, i) => <Pill key={t} label={t} on={i === on} onPress={() => onChange?.(i)} />)}
-    </View>
+    </ScrollView>
   );
 }
 export function Tabs({ items, on = 0, onChange }: { items: string[]; on?: number; onChange?: (i: number) => void }) {
