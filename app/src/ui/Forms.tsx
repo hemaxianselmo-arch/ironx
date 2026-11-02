@@ -65,14 +65,14 @@ export function SelCard({ title, s, on, visual, onPress }: { title: string; s: s
   );
 }
 /** Champ de saisie plat (field) */
-export function Field({ label, value, right, onChange, secure, placeholder, keyboard }: { label: string; value: string; right?: string; onChange?: (v: string) => void; secure?: boolean; placeholder?: string; keyboard?: any }) {
+export function Field({ label, value, right, onChange, secure, placeholder, keyboard, onRight }: { label: string; value: string; right?: string; onChange?: (v: string) => void; secure?: boolean; placeholder?: string; keyboard?: any; onRight?: () => void }) {
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>{label}</Text>
       <View style={{ height: 52, borderRadius: 14, backgroundColor: C.surf, flexDirection: "row", alignItems: "center", paddingHorizontal: 16 }}>
-        <TextInput value={value} onChangeText={onChange} secureTextEntry={secure} placeholder={placeholder} placeholderTextColor={C.mut} keyboardType={keyboard}
+        <TextInput value={value} onChangeText={onChange} secureTextEntry={secure} autoCapitalize={secure || keyboard === "email-address" ? "none" : undefined} autoCorrect={false} placeholder={placeholder} placeholderTextColor={C.mut} keyboardType={keyboard}
           style={{ flex: 1, fontFamily: inter(400), fontSize: 15, color: C.txt, outlineStyle: "none" } as any} />
-        {right ? <Text style={{ fontFamily: inter(400), fontSize: 13, color: C.mut }}>{right}</Text> : null}
+        {right ? <Text onPress={onRight} style={{ fontFamily: inter(400), fontSize: 13, color: C.mut, padding: 6 }}>{right}</Text> : null}
       </View>
     </View>
   );

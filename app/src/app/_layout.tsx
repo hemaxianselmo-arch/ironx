@@ -11,10 +11,11 @@ import { loadLibrary } from "../store/library";
 import { loadNutrition } from "../store/nutrition";
 import { loadGym } from "../store/gym";
 import { loadFeed } from "../store/feed";
+import { loadAuth } from "../store/auth";
 
 export default function RootLayout() {
   const [loaded] = useAppFonts();
-  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); loadNutrition(); loadGym(); loadFeed(); }, []);
+  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); loadNutrition(); loadGym(); loadFeed(); loadAuth(); }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <SafeAreaProvider>

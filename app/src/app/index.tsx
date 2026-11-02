@@ -7,13 +7,14 @@ import { IMG } from "../theme/images";
 import { C, inter, man } from "../theme/tokens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useProfile } from "../store/profile";
+import { useAuth } from "../store/auth";
 import { useEffect } from "react";
 
 /** D01 · Bienvenue — photo plein écran, logo, tagline, deux boutons */
 export default function Welcome() {
   const insets = useSafeAreaInsets();
-  const p = useProfile();
-  useEffect(() => { if (p.onboarded) router.replace("/(tabs)"); }, [p.onboarded]);
+  const p = useProfile(); const a = useAuth();
+  useEffect(() => { if (!a.ready) return; if (a.session && p.onboarded) router.replace("/(tabs)"); else if (a.session) router.replace("/onboarding/disciplines"); }, [a.ready, a.session, p.onboarded]);
   const bottom = Math.max(insets.bottom, 16) + 20;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -33,7 +34,7 @@ export default function Welcome() {
 
       <View style={{ position: "absolute", left: 24, right: 24, bottom, gap: 10 }}>
         <Btn label="Créer un compte" kind="white" onPress={() => router.push("/onboarding/compte")} />
-        <Btn label="Se connecter" kind="secondary" onPress={() => router.replace("/(tabs)")} />
+        <Btn label="Se connecter" kind="secondary" onPress={() => router.push("/onboarding/connexion")} />
         <Text style={{ fontFamily: inter(400), fontSize: 11, color: "rgba(255,255,255,0.5)", textAlign: "center", lineHeight: 15 }}>
           En continuant, tu acceptes les conditions d'utilisation et la politique de confidentialité.
         </Text>

@@ -25,10 +25,15 @@ export async function loadProfile() {
 export function useProfile() {
   return useSyncExternalStore((cb) => { subs.add(cb); return () => subs.delete(cb); }, () => state, () => state);
 }
+export let onProfileChange: ((p: Profile) => void) | null = null;
+export const setOnProfileChange = (f: typeof onProfileChange) => { onProfileChange = f; };
 export function setProfile(patch: Partial<Profile>) {
   state = { ...state, ...patch }; subs.forEach((f) => f());
   AsyncStorage.setItem(KEY, JSON.stringify(state)).catch(() => {});
+  onProfileChange?.(state);
 }
+export const getProfile = () => state;
+export function resetProfile(p?: Profile) { state = p ? { ...DEFAULT, ...p } : { ...DEFAULT }; subs.forEach((f) => f()); AsyncStorage.setItem(KEY, JSON.stringify(state)).catch(() => {}); }
 
 // ---------- calculs ----------
 export const age = (p: Profile) => { const d = new Date(p.naissance); const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };

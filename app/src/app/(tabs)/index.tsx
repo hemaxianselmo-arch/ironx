@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Page, Between, Actions, Avatar, Circ, Label, Big, Sub, B, Surf, Row, Ring, H2, Media, Shade, Ov, OvText, OvTitle, Btn, FRow, Mono } from "../../ui";
 import { C, inter, man } from "../../theme/tokens";
 import { router } from "expo-router";
-import { useWorkout, actions } from "../../store/workout";
+import { useWorkout, actions, volume } from "../../store/workout";
 import { PUSH } from "../../data/seed";
 import { useProfile, macros, weekPlan, suggestProgram } from "../../store/profile";
 import { useNutrition, dayTotals, burnedToday } from "../../store/nutrition";
@@ -14,11 +14,15 @@ export default function Accueil() {
   const p = useProfile(); const m = macros(p); const nu = useNutrition(); const eaten = dayTotals(); const kcalLeft = m.kcal + nu.kcalAdjust + burnedToday(history) - eaten.kcal; const prog = suggestProgram(p); const week = weekPlan(p);
   const today = (new Date().getDay() + 6) % 7; const todayName = week[today][1]; const next = week.find((w, i) => i >= today && w[1])?.[1] ?? week.find((w) => w[1])?.[1] ?? "Séance";
   const ini = (p.prenom.trim().slice(0, 2) || "IX").toUpperCase();
+  const now = Date.now(); const wk = history.filter((s) => now - s.startedAt < 7 * 86400e3); const prev = history.filter((s) => now - s.startedAt >= 7 * 86400e3 && now - s.startedAt < 14 * 86400e3);
+  const wkVol = wk.reduce((a, s) => a + volume(s), 0); const prevVol = prev.reduce((a, s) => a + volume(s), 0);
+  const wkPR = wk.reduce((a, s) => a + s.exos.reduce((b, e) => b + e.sets.filter((x) => x.pr).length, 0), 0);
+  const delta = prevVol > 0 ? Math.round(((wkVol - prevVol) / prevVol) * 100) : null;
   const start = () => { if (!active) actions.start(PUSH); router.push("/seance/encours"); };
   return (
     <Page hero withNav>
       <Between>
-        <Avatar ini={ini} size={40} ring />
+        <Pressable onPress={() => router.push("/profil")}><Avatar ini={ini} size={40} ring /></Pressable>
         <Actions>
           <Circ icon="search" size={40} kind="glass" />
           <Circ icon="bell" size={40} kind="glass" />
@@ -27,9 +31,9 @@ export default function Accueil() {
 
       <View style={{ alignItems: "center", gap: 4, paddingTop: 6, paddingBottom: 2 }}>
         <Label>Cette semaine · volume soulevé</Label>
-        <Big v="24 860" unit="kg" size={60} />
+        <Big v={Math.round(wkVol).toLocaleString("fr-FR").replace(/\u202f/g, " ")} unit="kg" size={60} />
         <Text style={{ fontFamily: inter(400), fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
-          4 séances · 2 records · <Text style={{ fontFamily: inter(600), color: C.green }}>+6 %</Text> vs semaine passée
+          {wk.length} séance{wk.length > 1 ? "s" : ""} · {wkPR} record{wkPR > 1 ? "s" : ""}{delta !== null ? <> · <Text style={{ fontFamily: inter(600), color: delta >= 0 ? C.green : C.red }}>{delta >= 0 ? "+" : ""}{delta} %</Text> vs semaine passée</> : wk.length === 0 ? " · lance ta première séance" : ""}
         </Text>
       </View>
 
