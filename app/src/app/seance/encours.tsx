@@ -115,7 +115,7 @@ export default function EnCours() {
         <Media photo={def.photo as any} h={140}>
           <Shade />
           <Ov x={14} y={12} anchor="lb"><OvText>Exercice {ei + 1}{exo.note ? ` · ${exo.note}` : ""}</OvText><OvTitle size={24}>{def.name}</OvTitle></Ov>
-          <Ov x={12} y={12} anchor="rt"><Play size={40} /></Ov>
+          <Ov x={12} y={12} anchor="rt"><Circ icon="chev" size={40} kind="glass" onPress={() => router.push({ pathname: "/seance/exo", params: { id: def.id } })} /></Ov>
         </Media>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -143,7 +143,7 @@ export default function EnCours() {
         )}
 
         {exo.sets.map((s, i) => <SetLine key={i} n={i + 1} kg={fmtKg(s.kg)} reps={String(s.reps)} state={s.done ? "done" : i === si ? "cur" : "todo"} note={s.pr ? `Série ${i + 1} · PR` : undefined} onPress={() => !s.done && setSheet({ si: i })} />)}
-        <Pressable onPress={() => actions.addSet(ei)} style={{ paddingVertical: 10, alignItems: "center" }}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.accent }}>+ Ajouter une série</Text></Pressable>
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 24 }}><Pressable onPress={() => actions.addSet(ei)} style={{ paddingVertical: 10 }}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.accent }}>+ Ajouter une série</Text></Pressable><Pressable onPress={() => router.push({ pathname: "/seance/bibliotheque", params: { pick: "active" } })} style={{ paddingVertical: 10 }}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.accent }}>+ Ajouter un exercice</Text></Pressable></View>
 
         <H2>Ensuite</H2>
         {active.exos.map((e, i) => i === ei ? null : (

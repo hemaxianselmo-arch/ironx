@@ -20,7 +20,7 @@ export default function Detail() {
         <Shade />
         <Ov x={16} y={insets.top + 14} anchor="lt" style={{ right: 16, flexDirection: "row", justifyContent: "space-between" }}>
           <Circ icon="back" size={38} kind="glass" onPress={() => router.back()} />
-          <View style={{ flexDirection: "row", gap: 8 }}><Circ icon="share" size={38} kind="glass" /><Circ icon="more" size={38} kind="glass" /></View>
+          <View style={{ flexDirection: "row", gap: 8 }}><Circ icon="stats" size={38} kind="glass" onPress={() => router.push({ pathname: "/seance/comparer", params: { id: s.id } })} /><Circ icon="share" size={38} kind="glass" /></View>
         </Ov>
         <Ov x={16} y={14} anchor="lb">
           <OvText>{d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} · {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</OvText>

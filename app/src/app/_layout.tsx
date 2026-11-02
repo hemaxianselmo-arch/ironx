@@ -7,10 +7,11 @@ import { useAppFonts } from "../theme/fonts";
 import { C } from "../theme/tokens";
 import { loadWorkouts } from "../store/workout";
 import { loadProfile } from "../store/profile";
+import { loadLibrary } from "../store/library";
 
 export default function RootLayout() {
   const [loaded] = useAppFonts();
-  useEffect(() => { loadWorkouts(); loadProfile(); }, []);
+  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <SafeAreaProvider>

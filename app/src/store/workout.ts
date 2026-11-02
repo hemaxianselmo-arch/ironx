@@ -2,6 +2,7 @@
 import { useSyncExternalStore } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Template, TemplateSet, PREVIOUS_BEST, e1rm, byId } from "../data/seed";
+import { Exercise } from "../data/exercises";
 
 export type LoggedSet = { kg: number; reps: number; rpe?: number; done: boolean; pr?: boolean; flags?: string[] };
 export type ActiveExo = { exoId: string; rest: number; note?: string; sets: LoggedSet[] };
@@ -44,6 +45,13 @@ function bestFor(exoId: string): TemplateSet | undefined {
   return all.reduce((a, b) => (e1rm(b.kg, b.reps) > e1rm(a.kg, a.reps) ? b : a));
 }
 export const bestOf = bestFor;
+/** Charge la plus lourde jamais faite (affichage « Record ») */
+export function heaviest(exoId: string): TemplateSet | undefined {
+  const all: TemplateSet[] = [...(PREVIOUS_BEST[exoId] ?? [])];
+  for (const s of state.history) for (const e of s.exos) if (e.exoId === exoId) for (const x of e.sets) if (x.done) all.push({ kg: x.kg, reps: x.reps });
+  if (!all.length) return undefined;
+  return all.reduce((a, b) => (b.kg > a.kg || (b.kg === a.kg && b.reps > a.reps) ? b : a));
+}
 
 export const actions = {
   start(t: Template) {
@@ -78,3 +86,25 @@ export const actions = {
   discard() { state = { ...state, active: null, restUntil: null }; emit(); },
 };
 export const exoName = (id: string) => byId(id)?.name ?? id;
+
+/** Historique d'un exercice : une entrée par séance où il a été fait */
+export function exoHistory(exoId: string) {
+  return state.history.map((s) => ({ session: s, sets: s.exos.filter((e) => e.exoId === exoId).flatMap((e) => e.sets.filter((x) => x.done)) })).filter((h) => h.sets.length);
+}
+/** Records par exercice (meilleur 1RM estimé), historique + données de départ */
+export function allRecords() {
+  const ids = new Set<string>([...Object.keys(PREVIOUS_BEST), ...state.history.flatMap((s) => s.exos.map((e) => e.exoId))]);
+  return [...ids].map((id) => ({ exoId: id, best: bestFor(id)!, date: state.history.find((s) => s.exos.some((e) => e.exoId === id && e.sets.some((x) => x.pr)))?.startedAt })).filter((r) => r.best);
+}
+/** Démarre une séance vide ou à partir d'une liste d'exercices (assistant, "ajouter à la séance") */
+export function startFromExos(name: string, exos: { exo: Exercise; sets?: number; reps?: number; kg?: number; rest?: number }[]) {
+  const t: Template = { id: "custom-" + Date.now(), name, program: "Séance libre", photo: exos[0]?.exo.photo ?? "photo-gym", level: "Moyen", minutes: exos.length * 10, discipline: "bodybuilding",
+    exos: exos.map((x) => ({ exoId: x.exo.id, rest: x.rest ?? 90, sets: Array.from({ length: x.sets ?? 3 }, () => ({ kg: x.kg ?? (bestFor(x.exo.id)?.kg ?? 20), reps: x.reps ?? 10 })) })) };
+  actions.start(t); return t;
+}
+export function addExoToActive(exo: Exercise) {
+  const a = state.active; if (!a) return false;
+  const b = bestFor(exo.id);
+  state = { ...state, active: { ...a, exos: [...a.exos, { exoId: exo.id, rest: 90, sets: Array.from({ length: 3 }, () => ({ kg: b?.kg ?? 20, reps: b?.reps ?? 10, done: false })) }] } };
+  emit(); return true;
+}
