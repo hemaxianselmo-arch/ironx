@@ -7,10 +7,11 @@ import { useWorkout, actions, volume } from "../../store/workout";
 import { PUSH } from "../../data/seed";
 import { useProfile, macros, weekPlan, suggestProgram } from "../../store/profile";
 import { useNutrition, dayTotals, burnedToday } from "../../store/nutrition";
+import { useActivities, readiness } from "../../store/activities";
 
 /** V3 · Accueil */
 export default function Accueil() {
-  const { active, history } = useWorkout();
+  const { active, history } = useWorkout(); useActivities(); const forme = readiness();
   const p = useProfile(); const m = macros(p); const nu = useNutrition(); const eaten = dayTotals(); const kcalLeft = m.kcal + nu.kcalAdjust + burnedToday(history) - eaten.kcal; const prog = suggestProgram(p); const week = weekPlan(p);
   const today = (new Date().getDay() + 6) % 7; const todayName = week[today][1]; const next = week.find((w, i) => i >= today && w[1])?.[1] ?? week.find((w) => w[1])?.[1] ?? "Séance";
   const ini = (p.prenom.trim().slice(0, 2) || "IX").toUpperCase();
@@ -65,6 +66,16 @@ export default function Accueil() {
         </Ov>
         <Ov x={14} y={14} anchor="rb"><Btn label="Lancer" kind="white" icon="play" size="sm" full={false} onPress={start} /></Ov>
       </Media>
+      <Surf pad={14}>
+        <Row gap={14}>
+          <Ring pct={forme.score} size={56} thick={6} color={forme.score >= 60 ? C.green : forme.score >= 40 ? C.orange : C.red}><Mono size={15}>{forme.score}</Mono></Ring>
+          <View style={{ flex: 1, gap: 3 }}>
+            <Text style={{ fontFamily: inter(600), fontSize: 15, color: C.txt }}>Forme du jour · {forme.score >= 80 ? "prêt à performer" : forme.score >= 60 ? "en forme" : forme.score >= 40 ? "fatigué" : "à ménager"}</Text>
+            <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }} numberOfLines={2}>{forme.tips[0]}</Text>
+          </View>
+          <Circ icon="chev" size={32} onPress={() => router.push("/perf/forme")} />
+        </Row>
+      </Surf>
 
       <H2 action="Voir tout">Ta salle</H2>
       <FRow left={<Avatar ini="KM" size={44} ring />} text={<><B>kevin.m</B> vient de battre son record au squat</>} right={<Mono size={15}>150 kg</Mono>} sub="il y a 1 h · [NOM DE LA SALLE]" />

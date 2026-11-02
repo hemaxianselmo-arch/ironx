@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text } from "react-native";
-import { Page, Top, Actions, Circ, Logo, Media, Shade, Ov, OvText, OvTitle, Btn, H2, Surf, Between, KV, Bars, FRow, B, Pill, Mono } from "../../ui";
+import { View, Text, Pressable } from "react-native";
+import { Page, Top, Actions, Circ, Logo, Media, Shade, Ov, OvText, OvTitle, Btn, H2, Surf, Between, KV, Bars, FRow, B, Pill, Mono, Icon } from "../../ui";
 import { C, inter, man } from "../../theme/tokens";
 import { router } from "expo-router";
 import { useWorkout, actions, volume, fmtVol, fmtT } from "../../store/workout";
 import { PUSH } from "../../data/seed";
+import { isoWeek } from "../../store/activities";
 import { useProfile, suggestProgram, weekPlan } from "../../store/profile";
 import { useLibrary, getTemplate } from "../../store/library";
 import { DAY_TO_TEMPLATE } from "../../data/templates";
@@ -25,6 +26,8 @@ export default function Seance() {
   const nextT = getTemplate(DAY_TO_TEMPLATE[nextDay] ?? "push") ?? PUSH;
   const week = history.filter((s) => Date.now() - s.startedAt < 7 * 86400e3);
   const vol = week.reduce((a, s) => a + volume(s), 0);
+  const wk4 = [3, 2, 1, 0].map((k) => history.filter((s) => { const d = (Date.now() - s.startedAt) / 86400e3; return d >= k * 7 && d < (k + 1) * 7; }).reduce((a, s) => a + volume(s), 0));
+  const wk4Labels = [3, 2, 1, 0].map((k) => "S" + isoWeek(Date.now() - k * 7 * 86400e3));
   const dur = week.reduce((a, s) => a + ((s.endedAt ?? s.startedAt) - s.startedAt), 0);
   const start = () => { if (!active) actions.start(nextT); router.push("/seance/encours"); };
   const last = history.find((s) => s.templateId === nextT.id);
@@ -46,8 +49,13 @@ export default function Seance() {
         <Circ icon="plus" size={52} label="Créer" onPress={() => router.push("/seance/editeur")} />
         <Circ icon="bolt" size={52} label="Assistant" onPress={() => router.push("/seance/assistant")} />
         <Circ icon="search" size={52} label="Exercices" onPress={() => router.push("/seance/bibliotheque")} />
-        <Circ icon="trophy" size={52} label="Records" onPress={() => router.push("/seance/records")} />
+        <Circ icon="trophy" size={52} label="Records" onPress={() => router.push("/perf")} />
       </View>
+      <Pressable onPress={() => router.push("/seance/modes")} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 18, backgroundColor: C.surf }}>
+        <View style={{ flexDirection: "row" }}>{["course", "hyrox", "crossfit", "street"].map((d, i) => <View key={d} style={{ marginLeft: i ? -10 : 0 }}><Logo name={d} size={32} badge={false} /></View>)}</View>
+        <View style={{ flex: 1 }}><Text style={{ fontFamily: inter(700), fontSize: 14, color: C.txt }}>Autres modes de séance</Text><Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>course · Hyrox · WOD · street · powerlifting</Text></View>
+        <Icon name="chev" size={18} color={C.mut} />
+      </Pressable>
 
       <H2>Cette semaine</H2>
       <Surf pad={14}>
@@ -56,7 +64,7 @@ export default function Seance() {
           <KV k="Séances" v={`${week.length} / 4`} strong />
           <KV k="Durée" v={dur ? `${Math.floor(dur / 3600e3)} h ${String(Math.floor((dur % 3600e3) / 60e3)).padStart(2, "0")}` : "0 h 00"} strong />
         </Between>
-        <Bars vals={[18.2, 22.4, 20.1, Math.max(0.1, vol / 1000)]} labels={["S42", "S43", "S44", "S45"]} w={330} />
+        <Bars vals={wk4.map((v) => Math.max(0.05, v / 1000))} labels={wk4Labels} w={330} />
       </Surf>
 
       <H2 action="Séances types" onAction={() => router.push("/seance/types")}>Mon programme</H2>

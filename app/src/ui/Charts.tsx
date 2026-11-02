@@ -95,7 +95,7 @@ export function MultiLine({ series, w = 358, h = 120, labels }: { series: { colo
 
 /** Radar (toile) — axes: labels, series: valeurs 0..1 par axe */
 export function Radar({ axes, series, size = 260 }: { axes: string[]; series: { color: string; values: number[]; fill?: boolean }[]; size?: number }) {
-  const cx = size / 2, cy = size / 2, r = size / 2 - 34, n = axes.length;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 46, n = axes.length;
   const pt = (i: number, v: number) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / n; return [cx + Math.cos(a) * r * v, cy + Math.sin(a) * r * v]; };
   const ring = (v: number) => "M" + Array.from({ length: n }, (_, i) => pt(i, v).map((x) => x.toFixed(1)).join(" ")).join(" L") + " Z";
   return (
