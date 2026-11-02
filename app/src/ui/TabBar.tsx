@@ -17,7 +17,7 @@ export function TabBar({ state, navigation, dark = false }: any) {
   const insets = useSafeAreaInsets();
   const active = state.routes[state.index].name;
   return (
-    <View style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: NAV_H + Math.max(0, insets.bottom - 18), paddingTop: 4, paddingHorizontal: 8, paddingBottom: 18 + Math.max(0, insets.bottom - 18),
+    <View style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: NAV_H - 18 + Math.max(insets.bottom, 18), paddingTop: 4, paddingHorizontal: 8, paddingBottom: Math.max(insets.bottom, 18),
       flexDirection: "row", backgroundColor: dark ? "rgba(12,14,26,0)" : "rgba(12,14,26,0.96)", borderTopWidth: dark ? 0 : 1, borderTopColor: C.line }}>
       {TABS.map((t) => {
         const on = active === t.key;

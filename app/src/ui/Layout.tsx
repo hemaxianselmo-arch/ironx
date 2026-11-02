@@ -30,7 +30,7 @@ export function Page({ children, hero = false, pad = true, scroll = true, withNa
   children: React.ReactNode; hero?: boolean; pad?: boolean; scroll?: boolean; withNav?: boolean; style?: ViewStyle;
 }) {
   const insets = useSafeAreaInsets();
-  const col: ViewStyle = { gap: 14, paddingHorizontal: pad ? PAD : 0, paddingTop: pad ? PAD + insets.top : 0, paddingBottom: (withNav ? NAV_H : 0) + 24 };
+  const col: ViewStyle = { gap: 14, paddingHorizontal: pad ? PAD : 0, paddingTop: pad ? PAD + insets.top : 0, paddingBottom: (withNav ? NAV_H : 0) + 24 + Math.max(insets.bottom, 12) };
   return (
     <View style={[{ flex: 1, backgroundColor: C.bg }, style]}>
       {hero ? <Hero /> : null}

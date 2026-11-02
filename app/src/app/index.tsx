@@ -5,9 +5,12 @@ import { router } from "expo-router";
 import { Btn } from "../ui";
 import { IMG } from "../theme/images";
 import { C, inter, man } from "../theme/tokens";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /** D01 · Bienvenue — photo plein écran, logo, tagline, deux boutons */
 export default function Welcome() {
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 16) + 20;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <Image source={IMG["photo-portrait"]} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" } as any} resizeMode="cover" />
@@ -18,13 +21,13 @@ export default function Welcome() {
         <Image source={IMG["ironx-full"]} style={{ width: 210, height: 209 }} resizeMode="contain" />
       </View>
 
-      <View style={{ position: "absolute", left: 24, bottom: 190, maxWidth: 330 }}>
+      <View style={{ position: "absolute", left: 24, bottom: bottom + 196, maxWidth: 330 }}>
         <Text style={{ fontFamily: man(600), fontSize: 24, letterSpacing: -0.5, lineHeight: 24 * 1.15, color: C.txt }}>
           Le progrès, c'est maintenant<Text style={{ color: C.accent }}>.</Text>
         </Text>
       </View>
 
-      <View style={{ position: "absolute", left: 24, right: 24, bottom: 28, gap: 10 }}>
+      <View style={{ position: "absolute", left: 24, right: 24, bottom, gap: 10 }}>
         <Btn label="Créer un compte" kind="white" onPress={() => router.push("/onboarding/compte")} />
         <Btn label="Se connecter" kind="secondary" onPress={() => router.replace("/(tabs)")} />
         <Text style={{ fontFamily: inter(400), fontSize: 11, color: "rgba(255,255,255,0.5)", textAlign: "center", lineHeight: 15 }}>

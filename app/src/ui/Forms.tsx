@@ -27,7 +27,7 @@ export const Headline = ({ q, s }: { q: string; s?: string }) => (
 /** Bouton d'action en bas (cta) : poussé en bas de la colonne */
 export function CTA({ label, icon, secondary, kind = "primary", onPress, onSecondary }: { label: string; icon?: any; secondary?: React.ReactNode; kind?: "primary" | "white" | "secondary"; onPress?: () => void; onSecondary?: () => void }) {
   return (
-    <View style={{ marginTop: "auto", gap: 12, paddingBottom: 20, paddingTop: 10 }}>
+    <View style={{ marginTop: "auto", gap: 12, paddingBottom: 8, paddingTop: 16 }}>
       <Btn label={label} kind={kind} icon={icon} onPress={onPress} />
       {secondary ? <Text onPress={onSecondary} style={{ fontFamily: inter(400), fontSize: 13, color: C.mut, textAlign: "center" }}>{secondary}</Text> : null}
     </View>
