@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "IRONX",
+    "slug": "ironx",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "bundleIdentifier": "app.ironx",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "app.ironx",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/img/ironx-emblem.png",
+        "backgroundColor": "#0C0E1A"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "scheme": "ironx",
+    "backgroundColor": "#0C0E1A",
+    "splash": {
+      "image": "./assets/img/ironx-emblem.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0C0E1A"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
