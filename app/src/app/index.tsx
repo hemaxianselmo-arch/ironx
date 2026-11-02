@@ -6,10 +6,14 @@ import { Btn } from "../ui";
 import { IMG } from "../theme/images";
 import { C, inter, man } from "../theme/tokens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useProfile } from "../store/profile";
+import { useEffect } from "react";
 
 /** D01 · Bienvenue — photo plein écran, logo, tagline, deux boutons */
 export default function Welcome() {
   const insets = useSafeAreaInsets();
+  const p = useProfile();
+  useEffect(() => { if (p.onboarded) router.replace("/(tabs)"); }, [p.onboarded]);
   const bottom = Math.max(insets.bottom, 16) + 20;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>

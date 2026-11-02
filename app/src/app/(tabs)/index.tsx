@@ -5,15 +5,19 @@ import { C, inter, man } from "../../theme/tokens";
 import { router } from "expo-router";
 import { useWorkout, actions } from "../../store/workout";
 import { PUSH } from "../../data/seed";
+import { useProfile, macros, weekPlan, suggestProgram } from "../../store/profile";
 
 /** V3 · Accueil */
 export default function Accueil() {
   const { active } = useWorkout();
+  const p = useProfile(); const m = macros(p); const prog = suggestProgram(p); const week = weekPlan(p);
+  const today = (new Date().getDay() + 6) % 7; const todayName = week[today][1]; const next = week.find((w, i) => i >= today && w[1])?.[1] ?? week.find((w) => w[1])?.[1] ?? "Séance";
+  const ini = (p.prenom.trim().slice(0, 2) || "IX").toUpperCase();
   const start = () => { if (!active) actions.start(PUSH); router.push("/seance/encours"); };
   return (
     <Page hero withNav>
       <Between>
-        <Avatar ini="HA" size={40} ring />
+        <Avatar ini={ini} size={40} ring />
         <Actions>
           <Circ icon="search" size={40} kind="glass" />
           <Circ icon="bell" size={40} kind="glass" />
@@ -37,21 +41,21 @@ export default function Accueil() {
 
       <Surf pad={14}>
         <Row gap={14}>
-          <Ring pct={68} size={64} thick={7}><Mono size={15}>1 040</Mono></Ring>
+          <Ring pct={0} size={64} thick={7}><Mono size={15}>{m.kcal.toLocaleString("fr-FR")}</Mono></Ring>
           <View style={{ flex: 1, gap: 3 }}>
-            <Text style={{ fontFamily: inter(600), fontSize: 15, color: C.txt }}>1 040 kcal restantes</Text>
-            <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>P 142 / 180 · G 210 / 320 · L 48 / 80</Text>
+            <Text style={{ fontFamily: inter(600), fontSize: 15, color: C.txt }}>{m.kcal.toLocaleString("fr-FR")} kcal restantes</Text>
+            <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>P 0 / {m.prot} · G 0 / {m.gluc} · L 0 / {m.lip}</Text>
           </View>
           <Circ icon="chev" size={32} />
         </Row>
       </Surf>
 
-      <H2>Aujourd'hui</H2>
+      <H2>{todayName ? "Aujourd'hui" : "Prochaine séance"}</H2>
       <Media photo="photo-deadlift" h={150}>
         <Shade />
         <Ov x={14} y={12} anchor="lb">
-          <OvText>Programme PPL · jour 1 / 6</OvText>
-          <OvTitle>Push · 62 min</OvTitle>
+          <OvText>{prog.name}</OvText>
+          <OvTitle>{todayName || next} · ~{[45, 60, 90, 120][p.duree]} min</OvTitle>
           <OvText dim={0.75}>Développé couché · Incliné · Dips · Élévations</OvText>
         </Ov>
         <Ov x={14} y={14} anchor="rb"><Btn label="Lancer" kind="white" icon="play" size="sm" full={false} onPress={start} /></Ov>

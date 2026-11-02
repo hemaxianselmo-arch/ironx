@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, SelRow, Logo, CTA } from "../../ui";
+import { useProfile, setProfile } from "../../store/profile";
 
 const LIST = [
   ["bodybuilding", "Musculation / Bodybuilding", "hypertrophie, volume, muscles ciblés"],
@@ -15,8 +16,8 @@ const LIST = [
 ];
 /** D04 · Tes disciplines */
 export default function Disciplines() {
-  const [on, setOn] = useState<string[]>(["bodybuilding", "powerlifting"]);
-  const toggle = (k: string) => setOn((v) => (v.includes(k) ? v.filter((x) => x !== k) : [...v, k]));
+  const on = useProfile().disciplines;
+  const toggle = (k: string) => setProfile({ disciplines: on.includes(k) ? on.filter((x) => x !== k) : [...on, k] });
   return (
     <Page>
       <ProgressTop step={1} total={8} onBack={() => router.back()} />

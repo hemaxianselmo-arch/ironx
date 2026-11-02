@@ -3,6 +3,7 @@ import { View, Text } from "react-native";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, Search, Media, Shade, Ov, OvText, Btn, SelRow, Avatar, Circ, Icon, CTA, B } from "../../ui";
 import { C, man } from "../../theme/tokens";
+import { setProfile } from "../../store/profile";
 
 /** D09 · Ta salle */
 export default function Salle() {
@@ -17,7 +18,7 @@ export default function Salle() {
           <Text style={{ fontFamily: man(700), fontSize: 18, color: "#fff" }}>[NOM DE LA SALLE]</Text>
           <OvText size={12.5}>Lamballe · 86 membres · 1,2 km</OvText>
         </Ov>
-        <Ov x={12} y={12} anchor="rb"><Btn label="Rejoindre" kind="white" size="sm" full={false} /></Ov>
+        <Ov x={12} y={12} anchor="rb"><Btn label="Rejoindre" kind="white" size="sm" full={false} onPress={() => { setProfile({ salle: "[NOM DE LA SALLE]" }); router.push("/onboarding/autorisations"); }} /></Ov>
       </Media>
       <SelRow visual={<Avatar ini="BF" size={48} />} title="Basic-Fit Saint-Brieuc" s="312 membres · 21 km" right={<Btn label="Rejoindre" kind="secondary" size="sm" full={false} />} />
       <SelRow visual={<Avatar ini="FC" size={48} />} title="Fitness Club Lamballe" s="54 membres · 2,8 km" right={<Btn label="Rejoindre" kind="secondary" size="sm" full={false} />} />

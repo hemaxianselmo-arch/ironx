@@ -3,14 +3,15 @@ import { View, Text } from "react-native";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, Big, Slider, FieldLabel, Days, Seg, SelRow, Toggle, CTA } from "../../ui";
 import { C, inter } from "../../theme/tokens";
+import { useProfile, setProfile } from "../../store/profile";
 
 /** D08 · Ton rythme */
 export default function Rythme() {
-  const [n, setN] = useState(4);
-  const [days, setDays] = useState([0, 1, 3, 4]);
-  const [dur, setDur] = useState(1);
-  const [slot, setSlot] = useState(2);
-  const [rappel, setRappel] = useState(true);
+  const p = useProfile();
+  const n = p.seances, days = p.jours, dur = p.duree, slot = p.creneau, rappel = p.rappel;
+  const setN = (v: number) => setProfile({ seances: v, jours: p.jours.length > v ? [...p.jours].sort().slice(0, v) : p.jours });
+  const setDays = (f: (d: number[]) => number[]) => setProfile({ jours: f(p.jours) });
+  const setDur = (v: number) => setProfile({ duree: v as any }); const setSlot = (v: number) => setProfile({ creneau: v as any }); const setRappel = (v: boolean) => setProfile({ rappel: v });
   return (
     <Page>
       <ProgressTop step={5} total={8} onBack={() => router.back()} />

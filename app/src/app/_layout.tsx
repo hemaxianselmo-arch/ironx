@@ -6,10 +6,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAppFonts } from "../theme/fonts";
 import { C } from "../theme/tokens";
 import { loadWorkouts } from "../store/workout";
+import { loadProfile } from "../store/profile";
 
 export default function RootLayout() {
   const [loaded] = useAppFonts();
-  useEffect(() => { loadWorkouts(); }, []);
+  useEffect(() => { loadWorkouts(); loadProfile(); }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <SafeAreaProvider>

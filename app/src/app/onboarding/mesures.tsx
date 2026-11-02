@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, Seg, Label, Ruler, Divider, CTA } from "../../ui";
+import { useProfile, setProfile } from "../../store/profile";
 
 /** D06 · Tes mesures */
 export default function Mesures() {
-  const [unit, setUnit] = useState(0);
-  const [taille, setTaille] = useState(178);
-  const [poids, setPoids] = useState(82);
+  const p = useProfile();
+  const unit = p.unit, taille = p.taille, poids = p.poids;
+  const setUnit = (v: number) => setProfile({ unit: v as any }); const setTaille = (v: number) => setProfile({ taille: v }); const setPoids = (v: number) => setProfile({ poids: v, poidsVise: p.poidsVise === p.poids ? v : p.poidsVise });
   return (
     <Page>
       <ProgressTop step={3} total={8} onBack={() => router.back()} />

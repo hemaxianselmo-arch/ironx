@@ -3,10 +3,11 @@ import { View, Text } from "react-native";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, SelCard, Icon, CTA } from "../../ui";
 import { C, inter } from "../../theme/tokens";
+import { useProfile, setProfile } from "../../store/profile";
 
 /** D11 · Confidentialité */
 export default function Confidentialite() {
-  const [on, setOn] = useState(0);
+  const on = useProfile().visibilite; const setOn = (v: number) => setProfile({ visibilite: v as any });
   const opts: [any, string, string][] = [["Salle", "Ma salle", "séances et records visibles par les membres de ta salle"], ["Fil", "Public", "visible par tous les membres IRONX, classements régionaux"], ["x", "Privé", "personne ne voit tes séances, tu gardes les statistiques"]];
   return (
     <Page>

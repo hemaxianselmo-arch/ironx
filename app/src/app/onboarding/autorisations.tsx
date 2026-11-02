@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { router } from "expo-router";
 import { Page, ProgressTop, Headline, SelRow, Icon, Toggle, Btn, CTA } from "../../ui";
 import { C } from "../../theme/tokens";
+import { useProfile, setProfile } from "../../store/profile";
 
 /** D10 · Autorisations */
 export default function Autorisations() {
-  const [notif, setNotif] = useState(true);
+  const notif = useProfile().rappel; const setNotif = (v: boolean) => setProfile({ rappel: v });
   return (
     <Page>
       <ProgressTop step={7} total={8} onBack={() => router.back()} />
