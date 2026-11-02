@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, TextInput } from "react-native";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
-import { Page, Top, Btn, Icon, Circ, ExoThumb, Field } from "../../ui";
+import { Page, Top, Btn, Icon, Circ, ExoThumb, Field, Pill } from "../../ui";
 import { C, inter, man } from "../../theme/tokens";
 import { useLibrary, getTemplate, lib, pendingAdd, setPendingAdd } from "../../store/library";
-import { Template, TemplateExo } from "../../data/templates";
+import { Template, TemplateExo, SET_KINDS, SetKind } from "../../data/templates";
 import { byId } from "../../data/seed";
 import { fmtKg, bestOf } from "../../store/workout";
 
@@ -26,9 +26,9 @@ export default function Editeur() {
   const move = (i: number, d: number) => setT((x) => { const a = [...x.exos]; const j = i + d; if (j < 0 || j >= a.length) return x; [a[i], a[j]] = [a[j], a[i]]; return { ...x, exos: a }; });
   const sets = t.exos.reduce((a, e) => a + e.sets.length, 0);
   const save = () => { lib.saveTemplate({ ...t, minutes: Math.max(15, Math.round(sets * 2.8)) }); draft = null; router.replace({ pathname: "/seance/apercu", params: { id: t.id } }); };
-  const Num = ({ v, onChange, w = 56, suffix }: { v: number; onChange: (n: number) => void; w?: number; suffix?: string }) => (
+  const Num = ({ v, onChange, w = 56, suffix, ph }: { v: number; onChange: (n: number) => void; w?: number; suffix?: string; ph?: string }) => (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-      <TextInput defaultValue={String(v).replace(".", ",")} keyboardType="decimal-pad" onEndEditing={(e) => onChange(parseFloat(e.nativeEvent.text.replace(",", ".")) || 0)} style={{ width: w, height: 34, borderRadius: 10, backgroundColor: C.surf, color: C.txt, fontFamily: inter(600), fontSize: 14, textAlign: "center", outlineStyle: "none" } as any} />
+      <TextInput defaultValue={v ? String(v).replace(".", ",") : ""} placeholder={ph ?? "0"} placeholderTextColor={C.mut} keyboardType="decimal-pad" onEndEditing={(e) => onChange(parseFloat(e.nativeEvent.text.replace(",", ".")) || 0)} style={{ width: w, height: 34, borderRadius: 10, backgroundColor: C.surf, color: C.txt, fontFamily: inter(600), fontSize: 14, textAlign: "center", outlineStyle: "none" } as any} />
       {suffix ? <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>{suffix}</Text> : null}
     </View>
   );
@@ -45,23 +45,30 @@ export default function Editeur() {
             <Pressable onPress={() => setT((x) => ({ ...x, exos: x.exos.filter((_, j) => j !== i) }))} style={{ padding: 4 }}><Icon name="x" size={16} color={C.red} /></Pressable>
           </View>
           <View style={{ flexDirection: "row", paddingLeft: 50, gap: 8 }}>
-            <Text style={{ width: 44, fontFamily: inter(400), fontSize: 11, color: C.mut }}>Série</Text><Text style={{ width: 70, fontFamily: inter(400), fontSize: 11, color: C.mut }}>Charge</Text><Text style={{ width: 60, fontFamily: inter(400), fontSize: 11, color: C.mut }}>Rép.</Text><Text style={{ fontFamily: inter(400), fontSize: 11, color: C.mut }}>Repos {fmtRest(e.rest)}</Text>
+            <Text style={{ width: 30, fontFamily: inter(400), fontSize: 11, color: C.mut }}>N°</Text><Text style={{ width: 64, fontFamily: inter(400), fontSize: 11, color: C.mut }}>Charge</Text><Text style={{ width: 54, fontFamily: inter(400), fontSize: 11, color: C.mut }}>Rép.</Text><Text style={{ width: 50, fontFamily: inter(400), fontSize: 11, color: C.mut }}>RPE</Text><Text style={{ fontFamily: inter(400), fontSize: 11, color: C.mut }}>Type</Text>
           </View>
           {e.sets.map((s, k) => (
             <View key={k} style={{ flexDirection: "row", alignItems: "center", paddingLeft: 50, gap: 8 }}>
-              <Text style={{ width: 44, fontFamily: inter(400), fontSize: 12, color: C.mut }}>{k + 1}</Text>
-              <View style={{ width: 70 }}><Num v={s.kg} onChange={(n) => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => (m === k ? { ...y, kg: n } : y)) }))} /></View>
-              <View style={{ width: 60 }}><Num v={s.reps} w={48} onChange={(n) => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => (m === k ? { ...y, reps: Math.round(n) } : y)) }))} /></View>
-              <Pressable onPress={() => upd(i, (x) => ({ ...x, sets: x.sets.filter((_, m) => m !== k) }))}><Icon name="x" size={14} color={C.mut} /></Pressable>
+              <Text style={{ width: 30, fontFamily: inter(400), fontSize: 12, color: C.mut }}>{k + 1}</Text>
+              <View style={{ width: 64 }}><Num v={s.kg} w={56} onChange={(n) => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => (m === k ? { ...y, kg: n } : y)) }))} /></View>
+              <View style={{ width: 54 }}><Num v={s.reps} w={46} onChange={(n) => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => (m === k ? { ...y, reps: Math.round(n) } : y)) }))} /></View>
+              <View style={{ width: 50 }}><Num v={s.rpe ?? 0} w={42} ph="—" onChange={(n) => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => (m === k ? { ...y, rpe: n ? Math.min(10, Math.max(5, n)) : undefined } : y)) }))} /></View>
+              <Pressable onPress={() => upd(i, (x) => ({ ...x, sets: x.sets.map((y, m) => { if (m !== k) return y; const idx = SET_KINDS.findIndex(([kk]) => kk === (y.kind ?? "normal")); return { ...y, kind: SET_KINDS[(idx + 1) % SET_KINDS.length][0] as SetKind }; }) }))} style={{ height: 34, minWidth: 44, paddingHorizontal: 8, borderRadius: 10, backgroundColor: s.kind && s.kind !== "normal" ? C.txt : C.surf, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ fontFamily: inter(600), fontSize: 11, color: s.kind && s.kind !== "normal" ? C.bg : C.mut }}>{SET_KINDS.find(([kk]) => kk === (s.kind ?? "normal"))?.[1]}</Text>
+              </Pressable>
+              <Pressable onPress={() => upd(i, (x) => ({ ...x, sets: x.sets.filter((_, m) => m !== k) }))} style={{ marginLeft: "auto" }}><Icon name="x" size={14} color={C.mut} /></Pressable>
             </View>
           ))}
-          <View style={{ flexDirection: "row", paddingLeft: 50, gap: 8, alignItems: "center" }}>
+          <View style={{ flexDirection: "row", paddingLeft: 50, gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <Pressable onPress={() => upd(i, (x) => ({ ...x, sets: [...x.sets, { ...(x.sets[x.sets.length - 1] ?? { kg: 20, reps: 10 }) }] }))}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.accent }}>+ série</Text></Pressable>
             <Text style={{ fontFamily: inter(400), fontSize: 12, color: C.mut }}>·  repos</Text>
-            <Pressable onPress={() => upd(i, (x) => ({ ...x, rest: Math.max(0, x.rest - 15) }))}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.txt }}>−15 s</Text></Pressable>
-            <Pressable onPress={() => upd(i, (x) => ({ ...x, rest: x.rest + 15 }))}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.txt }}>+15 s</Text></Pressable>
+            <Pressable onPress={() => upd(i, (x) => ({ ...x, rest: Math.max(0, x.rest - 15) }))} style={{ padding: 4 }}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.txt }}>−15</Text></Pressable>
+            <Num v={e.rest} w={52} suffix="s" onChange={(n) => upd(i, (x) => ({ ...x, rest: Math.max(0, Math.round(n)) }))} />
+            <Pressable onPress={() => upd(i, (x) => ({ ...x, rest: x.rest + 15 }))} style={{ padding: 4 }}><Text style={{ fontFamily: inter(600), fontSize: 13, color: C.txt }}>+15</Text></Pressable>
+            <Pill label={e.superset ? "Enchaîné avec le suivant ✓" : "Enchaîner avec le suivant"} on={!!e.superset} onPress={() => upd(i, (x) => ({ ...x, superset: !x.superset }))} />
           </View>
         </View>); })}
+      <Text style={{ fontFamily: inter(400), fontSize: 11.5, color: C.mut, lineHeight: 16 }}>Type de série : touche pour changer (Normale → Échauffement → Top set → Back-off → Drop set → Rest-pause → AMRAP). RPE : intensité visée de 5 à 10, vide = libre. « Enchaîner » = superset, sans repos avant l'exercice suivant.</Text>
       {!t.exos.length ? <Text style={{ fontFamily: inter(400), fontSize: 13, color: C.mut }}>Aucun exercice. Ajoute-en depuis la bibliothèque.</Text> : null}
       <View style={{ flexDirection: "row", gap: 8, paddingTop: 6 }}>
         <View style={{ flex: 1 }}><Btn label="Ajouter un exercice" kind="secondary" icon="plus" size="md" onPress={() => router.push({ pathname: "/seance/bibliotheque", params: { pick: "editor" } })} /></View>

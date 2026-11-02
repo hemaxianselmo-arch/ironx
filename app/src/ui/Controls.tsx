@@ -58,7 +58,7 @@ export function Pill({ label, on, onPress }: { label: string; on?: boolean; onPr
 }
 export function Pills({ items, on = 0, onChange }: { items: string[]; on?: number; onChange?: (i: number) => void }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingRight: 16 }} style={{ marginRight: -16 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingRight: 16 }} style={{ flexGrow: 0, marginRight: -16 }}>
       {items.map((t, i) => <Pill key={t} label={t} on={i === on} onPress={() => onChange?.(i)} />)}
     </ScrollView>
   );

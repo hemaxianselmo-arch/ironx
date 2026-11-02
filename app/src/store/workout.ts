@@ -1,11 +1,11 @@
 // Magasin de la séance : séance en cours + historique, persistés sur le téléphone (AsyncStorage)
 import { useSyncExternalStore } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Template, TemplateSet, PREVIOUS_BEST, e1rm, byId } from "../data/seed";
+import { Template, TemplateSet, SetKind, PREVIOUS_BEST, e1rm, byId } from "../data/seed";
 import { Exercise } from "../data/exercises";
 
-export type LoggedSet = { kg: number; reps: number; rpe?: number; done: boolean; pr?: boolean; flags?: string[] };
-export type ActiveExo = { exoId: string; rest: number; note?: string; sets: LoggedSet[] };
+export type LoggedSet = { kg: number; reps: number; rpe?: number; done: boolean; pr?: boolean; flags?: string[]; targetRpe?: number; kind?: SetKind; targetReps?: number };
+export type ActiveExo = { exoId: string; rest: number; note?: string; superset?: boolean; sets: LoggedSet[] };
 export type Session = { id: string; templateId: string; name: string; program: string; startedAt: number; endedAt?: number; exos: ActiveExo[]; photo: string };
 export type PR = { exoId: string; kg: number; reps: number; prevKg?: number; prevReps?: number };
 
@@ -45,6 +45,13 @@ function bestFor(exoId: string): TemplateSet | undefined {
   return all.reduce((a, b) => (e1rm(b.kg, b.reps) > e1rm(a.kg, a.reps) ? b : a));
 }
 export const bestOf = bestFor;
+/** Meilleur connu + séries déjà validées de cet exercice dans la séance en cours (hors série si) */
+function bestWithActive(exo: ActiveExo, si: number): TemplateSet | undefined {
+  const all: TemplateSet[] = []; const b = bestFor(exo.exoId); if (b) all.push(b);
+  exo.sets.forEach((x, i) => { if (x.done && i !== si) all.push({ kg: x.kg, reps: x.reps }); });
+  if (!all.length) return undefined;
+  return all.reduce((a, c) => (e1rm(c.kg, c.reps) > e1rm(a.kg, a.reps) ? c : a));
+}
 /** Charge la plus lourde jamais faite (affichage « Record ») */
 export function heaviest(exoId: string): TemplateSet | undefined {
   const all: TemplateSet[] = [...(PREVIOUS_BEST[exoId] ?? [])];
@@ -56,19 +63,33 @@ export function heaviest(exoId: string): TemplateSet | undefined {
 export const actions = {
   start(t: Template) {
     state = { ...state, active: { id: String(Date.now()), templateId: t.id, name: t.name, program: t.program, startedAt: Date.now(), photo: t.photo,
-      exos: t.exos.map((e) => ({ exoId: e.exoId, rest: e.rest, note: e.note, sets: e.sets.map((s) => ({ kg: s.kg, reps: s.reps, done: false })) })) }, lastPR: null, restUntil: null };
+      exos: t.exos.map((e) => ({ exoId: e.exoId, rest: e.rest, note: e.note, superset: e.superset, sets: e.sets.map((s) => ({ kg: s.kg, reps: s.reps, targetReps: s.reps, targetRpe: s.rpe, kind: s.kind, done: false })) })) }, lastPR: null, restUntil: null };
     emit();
   },
   /** Valide une série : détecte le record (1RM estimé supérieur au meilleur connu) et lance le repos */
   logSet(ei: number, si: number, kg: number, reps: number, rpe?: number, flags?: string[]) {
     const a = state.active; if (!a) return;
-    const exo = a.exos[ei]; const best = bestFor(exo.exoId);
-    const pr = reps > 0 && kg > 0 && (!best || e1rm(kg, reps) > e1rm(best.kg, best.reps));
-    const sets = exo.sets.map((s, i) => (i === si ? { kg, reps, rpe, flags, done: true, pr } : s));
+    const exo = a.exos[ei]; const best = bestWithActive(exo, si);
+    // record seulement si on bat un meilleur connu (la toute première fois n'est pas un record)
+    const pr = reps > 0 && kg > 0 && !!best && e1rm(kg, reps) > e1rm(best.kg, best.reps);
+    const sets = exo.sets.map((s, i) => (i === si ? { ...s, kg, reps, rpe: rpe ?? s.rpe, flags: flags ?? s.flags, done: true, pr } : s));
     const exos = a.exos.map((e, i) => (i === ei ? { ...e, sets } : e));
-    state = { ...state, active: { ...a, exos }, lastPR: pr ? { exoId: exo.exoId, kg, reps, prevKg: best?.kg, prevReps: best?.reps } : null, restUntil: Date.now() + exo.rest * 1000, restTotal: exo.rest };
+    // enchaîné avec le suivant (superset) : pas de repos ; drop set / rest-pause : repos très court
+    const nextKind = exo.sets[si + 1]?.kind; const rest = exo.superset ? 0 : nextKind === "drop" ? 0 : nextKind === "restpause" ? 20 : exo.rest;
+    state = { ...state, active: { ...a, exos }, lastPR: pr ? { exoId: exo.exoId, kg, reps, prevKg: best?.kg, prevReps: best?.reps } : null, restUntil: rest > 0 ? Date.now() + rest * 1000 : null, restTotal: rest };
     emit();
   },
+  /** Modifie une série (prévue ou déjà validée) sans lancer le repos */
+  editSet(ei: number, si: number, patch: Partial<LoggedSet>) {
+    const a = state.active; if (!a) return;
+    const exo = a.exos[ei]; const best = bestWithActive(exo, si);
+    const sets = exo.sets.map((s, i) => { if (i !== si) return s; const n = { ...s, ...patch }; if (n.done) n.pr = n.reps > 0 && n.kg > 0 && !!best && e1rm(n.kg, n.reps) > e1rm(best.kg, best.reps); return n; });
+    state = { ...state, active: { ...a, exos: a.exos.map((e, i) => (i === ei ? { ...e, sets } : e)) } }; emit();
+  },
+  removeSet(ei: number, si: number) { const a = state.active; if (!a) return; state = { ...state, active: { ...a, exos: a.exos.map((e, i) => (i === ei ? { ...e, sets: e.sets.filter((_, j) => j !== si) } : e)) } }; emit(); },
+  setRest(ei: number, rest: number) { const a = state.active; if (!a) return; state = { ...state, active: { ...a, exos: a.exos.map((e, i) => (i === ei ? { ...e, rest: Math.max(0, rest) } : e)) } }; if (state.restUntil) state = { ...state, restUntil: Date.now() + Math.max(0, rest) * 1000, restTotal: rest }; emit(); },
+  setSuperset(ei: number, on: boolean) { const a = state.active; if (!a) return; state = { ...state, active: { ...a, exos: a.exos.map((e, i) => (i === ei ? { ...e, superset: on } : e)) } }; emit(); },
+  removeExo(ei: number) { const a = state.active; if (!a || a.exos.length <= 1) return; state = { ...state, active: { ...a, exos: a.exos.filter((_, i) => i !== ei) } }; emit(); },
   addSet(ei: number) {
     const a = state.active; if (!a) return;
     const exo = a.exos[ei]; const last = exo.sets[exo.sets.length - 1] ?? { kg: 20, reps: 10 };

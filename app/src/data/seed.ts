@@ -1,7 +1,8 @@
 export { EXERCISES, EXO_BY_ID } from "./exercises";
 export type { Exercise } from "./exercises";
 export { TEMPLATES, TEMPLATE_BY_ID } from "./templates";
-export type { Template, TemplateExo, TemplateSet } from "./templates";
+export type { Template, TemplateExo, TemplateSet, SetKind } from "./templates";
+export { SET_KINDS, KIND_LABEL } from "./templates";
 import { EXO_BY_ID } from "./exercises";
 import { TEMPLATE_BY_ID } from "./templates";
 export const byId = (id: string) => EXO_BY_ID[id] ?? customExo(id)!;

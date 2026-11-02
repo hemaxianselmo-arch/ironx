@@ -1,6 +1,11 @@
 // Séances types intégrées
-export type TemplateSet = { kg: number; reps: number };
-export type TemplateExo = { exoId: string; sets: TemplateSet[]; rest: number; note?: string };
+export type SetKind = "normal" | "warmup" | "top" | "backoff" | "drop" | "restpause" | "amrap";
+export const SET_KINDS: [SetKind, string, string][] = [["normal", "Normale", "N"], ["warmup", "Échauffement", "E"], ["top", "Top set", "T"], ["backoff", "Back-off", "B"], ["drop", "Drop set", "D"], ["restpause", "Rest-pause", "RP"], ["amrap", "AMRAP", "A"]];
+export const KIND_LABEL = Object.fromEntries(SET_KINDS.map(([k, l]) => [k, l])) as Record<SetKind, string>;
+/** Une série programmée : charge, reps visées, RPE visé (optionnel), type */
+export type TemplateSet = { kg: number; reps: number; rpe?: number; kind?: SetKind };
+/** superset : enchaîné avec l'exercice suivant sans repos (superset / circuit) */
+export type TemplateExo = { exoId: string; sets: TemplateSet[]; rest: number; note?: string; superset?: boolean; tempo?: string };
 export type Template = { id: string; name: string; program: string; exos: TemplateExo[]; photo: string; level: "Facile" | "Moyen" | "Avancé" | "Dur"; minutes: number; discipline: string; custom?: boolean };
 
 const S = (kg: number, reps: number, n = 3): TemplateSet[] => Array.from({ length: n }, () => ({ kg, reps }));

@@ -23,7 +23,7 @@ export default function Editeur() {
       <View style={{ position: "absolute", left: 0, right: 0, bottom: Math.max(insets.bottom, 16) + 8, gap: 12 }}>
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 10 }}>{(["filtre", "son"] as const).map((t) => <Pressable key={t} onPress={() => setTab(t)} style={{ paddingVertical: 6, paddingHorizontal: 14, borderRadius: 14, backgroundColor: tab === t ? "#fff" : "rgba(255,255,255,0.14)" }}><Text style={{ fontFamily: inter(700), fontSize: 13, color: tab === t ? C.bg : "#fff" }}>{t === "filtre" ? "Filtres" : "Musique"}</Text></Pressable>)}</View>
         {tab === "filtre" ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 14 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 14 }} style={{ flexGrow: 0 }}>
             {FILTERS.map(([n, c], i) => <Pressable key={n} onPress={() => feed.setDraft({ ...drafts, filter: i })} style={{ alignItems: "center", gap: 5 }}><View style={{ width: 58, height: 58, borderRadius: 29, overflow: "hidden", borderWidth: drafts.filter === i ? 2 : 0, borderColor: "#fff", opacity: drafts.filter === i ? 1 : 0.8 }}><Image source={src as any} style={{ width: 58, height: 58 }} resizeMode="cover" /><View style={{ position: "absolute", inset: 0, backgroundColor: c } as any} /></View><Text style={{ fontFamily: inter(400), fontSize: 11, color: "#fff" }}>{n}</Text></Pressable>)}
           </ScrollView>
         ) : (
