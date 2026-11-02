@@ -30,7 +30,19 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "IRONX utilise l'appareil photo pour scanner les codes-barres et photographier tes assiettes."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "IRONX accède à tes photos pour tes assiettes et tes photos de progression."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

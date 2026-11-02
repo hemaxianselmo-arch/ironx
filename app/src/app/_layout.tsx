@@ -8,10 +8,11 @@ import { C } from "../theme/tokens";
 import { loadWorkouts } from "../store/workout";
 import { loadProfile } from "../store/profile";
 import { loadLibrary } from "../store/library";
+import { loadNutrition } from "../store/nutrition";
 
 export default function RootLayout() {
   const [loaded] = useAppFonts();
-  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); }, []);
+  useEffect(() => { loadWorkouts(); loadProfile(); loadLibrary(); loadNutrition(); }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <SafeAreaProvider>
