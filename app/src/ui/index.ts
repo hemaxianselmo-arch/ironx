@@ -7,3 +7,4 @@ export * from "./Forms";
 export * from "./LogoH";
 export * from "./Figure";
 export * from "./Nutri";
+export * from "./Gym";
