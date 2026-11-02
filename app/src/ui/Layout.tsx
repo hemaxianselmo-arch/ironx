@@ -35,7 +35,7 @@ export function Page({ children, hero = false, pad = true, scroll = true, withNa
     <View style={[{ flex: 1, backgroundColor: C.bg }, style]}>
       {hero ? <Hero /> : null}
       {scroll ? (
-        <ScrollView contentContainerStyle={col} showsVerticalScrollIndicator={false}>{children}</ScrollView>
+        <ScrollView contentContainerStyle={[col, { flexGrow: 1 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">{children}</ScrollView>
       ) : (
         <View style={[col, { flex: 1 }]}>{children}</View>
       )}
