@@ -6,3 +6,4 @@ app/ios/
 *.log
 shots/
 /*.png
+rec24/
